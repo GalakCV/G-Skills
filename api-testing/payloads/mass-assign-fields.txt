@@ -1,0 +1,17 @@
+# Privileged fields to try over-posting (on your OWN object only)
+role
+is_admin
+isAdmin
+is_staff
+admin
+verified
+emailVerified
+status
+balance
+credits
+price
+discount
+owner
+owner_id
+tenantId
+id

@@ -1,0 +1,15 @@
+# service|cname-substring|http-fingerprint|claimable
+GitHub Pages|github.io|There isn't a GitHub Pages site here|yes
+AWS S3|s3.amazonaws.com|NoSuchBucket|yes
+Heroku|herokudns.com|No such app|yes
+Heroku|herokuapp.com|No such app|yes
+Azure|azurewebsites.net|404 Web Site not found|yes
+Azure|cloudapp.azure.com||yes
+Azure Traffic Manager|trafficmanager.net||yes
+Fastly|fastly.net|Fastly error: unknown domain|yes
+Shopify|myshopify.com|Sorry, this shop is currently unavailable|yes
+Zendesk|zendesk.com|Help Center Closed|yes
+Netlify|netlify.app|Not Found|yes
+Surge|surge.sh|project not found|yes
+Readthedocs|readthedocs.io|unknown to Read the Docs|yes
+AWS CloudFront|cloudfront.net||no

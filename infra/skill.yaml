@@ -1,0 +1,42 @@
+name: infra
+version: 1.0.0
+description: >
+  Authorized infrastructure attack-surface testing: subdomain takeover, exposed services,
+  TLS/DNS weaknesses. Detection and safe proof only — never claims a resource or exploits.
+license: MIT
+
+default_tier: active-intrusive
+requires_authorization: true
+
+inputs:
+  target: null
+  run_dir: null
+
+guard:
+  scope_filter: ../recon/scripts/scope_filter.py
+  non_destructive: true
+  no_resource_claim: true   # never register/claim a dangling resource
+
+phases:
+  - id: takeover
+    tier: active-safe        # DNS + one fingerprint GET; the highest-value infra bug
+    desc: dangling CNAME -> takeover-prone service match
+    runbook: runbooks/takeover.md
+    script: scripts/takeover_check.py
+    payloads: payloads/takeover-fingerprints.txt
+    priority: 1
+  - id: exposed-services
+    desc: reachable admin panels / dev tools / management UIs (read-only)
+    runbook: runbooks/services.md
+    payloads: payloads/panels.txt
+  - id: tls
+    tier: active-safe
+    desc: expired/mismatched certs, weak protocols
+    runbook: runbooks/tls.md
+    script: scripts/tls_check.sh
+  - id: dns
+    desc: zone transfer, dangling records, misconfig (detection only)
+    runbook: runbooks/dns.md
+
+outputs:
+  findings: "{run_dir}/findings/infra.jsonl"

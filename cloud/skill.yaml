@@ -1,0 +1,40 @@
+name: cloud
+version: 1.0.0
+description: >
+  Authorized cloud attack-surface testing: exposed buckets, misconfigured assets,
+  metadata reachability. Detection and reachability proof only — never credential theft.
+license: MIT
+
+default_tier: active-intrusive
+requires_authorization: true
+
+inputs:
+  target: null
+  run_dir: null
+
+guard:
+  scope_filter: ../recon/scripts/scope_filter.py
+  non_destructive: true
+  no_credential_retrieval: true   # never pull or use real cloud credentials
+
+phases:
+  - id: asset-fingerprint
+    tier: active-safe
+    desc: detect AWS/GCP/Azure from CNAME/headers
+    runbook: runbooks/fingerprint.md
+    script: scripts/cloud_fingerprint.py
+  - id: bucket-exposure
+    desc: find & test object storage for public list/read (unauth GET)
+    runbook: runbooks/buckets.md
+    script: scripts/bucket_check.sh
+    payloads: payloads/bucket-words.txt
+  - id: metadata-reach
+    desc: metadata reachability via a confirmed SSRF (reachability only)
+    runbook: runbooks/metadata.md
+    payloads: payloads/metadata-endpoints.txt
+  - id: misconfig
+    desc: public snapshots, open browsers, exposed cloud dashboards
+    runbook: runbooks/misconfig.md
+
+outputs:
+  findings: "{run_dir}/findings/cloud.jsonl"

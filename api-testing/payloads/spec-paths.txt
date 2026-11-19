@@ -1,0 +1,13 @@
+# Common OpenAPI/Swagger/GraphQL spec locations (read-only GET)
+/openapi.json
+/openapi/v3.json
+/swagger.json
+/swagger/v1/swagger.json
+/v3/api-docs
+/api-docs
+/api/swagger.json
+/api/openapi.json
+/api/v1/openapi.json
+/.well-known/openapi.json
+/swagger-ui/index.html
+/graphql

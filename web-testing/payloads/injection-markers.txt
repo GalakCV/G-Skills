@@ -1,0 +1,17 @@
+# Safe confirmation markers — detect the sink, never extract data.
+# SQLi boolean
+' AND '1'='1
+' AND '1'='2
+# SQLi error trigger
+'
+# SSTI arithmetic markers (look for the evaluated result, e.g. 49)
+{{7*7}}
+${7*7}
+#{7*7}
+<%= 7*7 %>
+# NoSQL operator injection (JSON body)
+{"$ne": null}
+{"$gt": ""}
+# Command-injection timing marker (bounded; confirm the sink only)
+;sleep 3
+|sleep 3

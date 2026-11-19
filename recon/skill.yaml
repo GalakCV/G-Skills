@@ -1,0 +1,76 @@
+name: recon
+version: 1.0.0
+description: >
+  Authorized bug bounty web reconnaissance. Maps the attack surface end to end and
+  produces a complete, annotated inventory. Coverage, not pruning — the hunter decides.
+license: MIT
+
+# Safety tier for the whole skill. Phases carry their own tier; anything above
+# "active-safe" must be gated by explicit human approval in the harness.
+default_tier: active-safe
+
+inputs:
+  scope:
+    seeds: []            # apex domains, e.g. ["example.com"]
+    in_scope: []         # wildcard patterns, e.g. ["*.example.com"]
+    out_of_scope: []     # patterns that always win, e.g. ["*.vpn.example.com"]
+  run_dir: null          # per-target run directory (the harness supplies this)
+
+env:
+  seclists: /usr/share/seclists        # overrideable
+  dns_wordlist: ${env.seclists}/Discovery/DNS/subdomains-top1million-5000.txt
+  rate_dns: 50
+  rate_http: 10
+
+# Every candidate host flows through scope_filter before it is used, and resolved
+# results are filtered again. Out-of-scope always wins.
+guard:
+  scope_filter: scripts/scope_filter.py
+
+phases:
+  - id: passive-enum
+    tier: passive
+    desc: subfinder/assetfinder + historical (wayback/gau) + CT logs
+    run: scripts/passive_enum.sh
+    args: ["{run_dir}"]
+    out: "{run_dir}/hosts/passive.txt"
+    card: SKILL.md#passive-enum
+
+  - id: active-discovery
+    tier: active-safe          # DNS brute hits resolvers, not the target web servers
+    desc: naming-grammar permutation + DNS brute, resolved with dnsx
+    run: scripts/active_discovery.sh
+    args: ["{run_dir}", "{env.dns_wordlist}", "{env.rate_dns}"]
+    out: "{run_dir}/hosts/active.txt"
+    needs: [passive-enum]
+    card: SKILL.md#active-discovery
+
+  - id: http-probe
+    tier: active-safe          # one root request per host; liveness + fingerprint
+    desc: httpx liveness and fingerprint over the merged host list
+    run: scripts/http_probe.sh
+    args: ["{run_dir}", "{env.rate_http}"]
+    out: "{run_dir}/out/httpx.jsonl"
+    needs: [passive-enum, active-discovery]
+    card: SKILL.md#http-probe
+
+  - id: surface-mapping
+    tier: passive
+    desc: build the complete annotated inventory (coverage, not pruning)
+    run: scripts/surface_table.py
+    args: ["{run_dir}"]
+    out: "{run_dir}/out/surface.tsv"
+    needs: [http-probe]
+    card: SKILL.md#surface-mapping
+    runbook: runbooks/triage.md
+
+# Intrusive follow-ups are NOT part of recon. They live in web-testing / api-testing
+# and run only via the harness's gated `explore` command.
+gated_next:
+  - content-fuzzing
+  - route-mapping
+  - api-auth-testing
+
+outputs:
+  surface_table: "{run_dir}/out/surface.tsv"
+  hosts_all: "{run_dir}/hosts/all.txt"

@@ -1,0 +1,49 @@
+name: web-testing
+version: 1.0.0
+description: >
+  Authorized web application vulnerability testing. Given a live, in-scope host from
+  recon, tests web vuln classes safely and confirms real issues with minimal evidence.
+license: MIT
+
+# INTRUSIVE. The harness runs this only via the human-gated `explore` command, after the
+# hunter picks a host from the recon surface table.
+default_tier: active-intrusive
+requires_authorization: true
+
+inputs:
+  target: null          # a single in-scope host chosen by the hunter
+  run_dir: null
+  identities:           # optional, for access-control tests
+    user_a: null
+    user_b: null
+
+guard:
+  scope_filter: ../recon/scripts/scope_filter.py
+  non_destructive: true   # GET/read-first; no destructive actions; minimal evidence
+
+phases:
+  - id: access-control
+    desc: IDOR/BOLA, privilege, forced browsing, the incomplete-fix pattern
+    runbook: runbooks/access-control.md
+    priority: 1          # highest yield, lowest noise — start here
+  - id: injection
+    desc: SQLi/command/SSTI/NoSQL — safe confirmation only (no data extraction)
+    runbook: runbooks/injection.md
+    payloads: payloads/injection-markers.txt
+    helper: scripts/diff_probe.py
+  - id: ssrf
+    desc: server-side request forgery, confirmed via your own collaborator
+    runbook: runbooks/ssrf.md
+  - id: xss
+    desc: reflected/stored/DOM with a CSP reality check
+    runbook: runbooks/xss.md
+    helper: scripts/csp_check.py
+  - id: file-upload
+    desc: type/extension bypass + serving behavior (full-chain)
+    runbook: runbooks/file-upload.md
+  - id: business-logic
+    desc: workflow bypass, race, price/quantity tampering (own test data only)
+    runbook: runbooks/business-logic.md
+
+outputs:
+  findings: "{run_dir}/findings/web.jsonl"

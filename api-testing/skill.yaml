@@ -1,0 +1,44 @@
+name: api-testing
+version: 1.0.0
+description: >
+  Authorized REST/GraphQL API security testing. Mines the spec, tests authentication
+  enforcement and object/function-level authorization, confirms with minimal evidence.
+license: MIT
+
+# INTRUSIVE. Runs only via the harness's human-gated `explore` command.
+default_tier: active-intrusive
+requires_authorization: true
+
+inputs:
+  target: null          # a single in-scope API host chosen by the hunter
+  run_dir: null
+
+guard:
+  scope_filter: ../recon/scripts/scope_filter.py
+  non_destructive: true   # read-first; one object proves a bug; never dump datasets
+
+phases:
+  - id: spec-recon
+    desc: find & mine OpenAPI/Swagger/GraphQL — endpoints, auth model, params
+    runbook: runbooks/spec-recon.md
+    script: scripts/spec_fetch.sh
+    miner: scripts/spec_mine.py
+    payloads: payloads/spec-paths.txt
+    priority: 1
+  - id: auth-enforcement
+    desc: the no-token test — Bearer-declared endpoints that return data without a token
+    runbook: runbooks/auth-enforcement.md
+    script: scripts/noauth_probe.sh
+  - id: bola
+    desc: object-level authz — another user's object by id (prove with ONE object)
+    runbook: runbooks/bola.md
+  - id: bfla
+    desc: function-level authz — privileged action as a low-priv identity
+    runbook: runbooks/bfla.md
+  - id: mass-assignment
+    desc: over-posting privileged fields (role, is_admin, balance) on your own object
+    runbook: runbooks/mass-assignment.md
+    payloads: payloads/mass-assign-fields.txt
+
+outputs:
+  findings: "{run_dir}/findings/api.jsonl"

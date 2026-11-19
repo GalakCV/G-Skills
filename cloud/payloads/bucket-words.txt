@@ -1,0 +1,21 @@
+# Bucket name candidates — {name} is replaced with the target slug
+{name}
+{name}-prod
+{name}-dev
+{name}-staging
+{name}-test
+{name}-backup
+{name}-backups
+{name}-assets
+{name}-static
+{name}-media
+{name}-uploads
+{name}-data
+{name}-logs
+{name}-public
+{name}-private
+{name}-files
+{name}-cdn
+{name}-images
+{name}-internal
+{name}-archive

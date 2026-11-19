@@ -1,0 +1,7 @@
+# Cloud metadata endpoints — reachability proof ONLY (never retrieve credentials)
+# AWS IMDS
+http://169.254.169.254/latest/meta-data/
+# GCP (needs Metadata-Flavor: Google header)
+http://metadata.google.internal/computeMetadata/v1/
+# Azure IMDS (needs Metadata: true header)
+http://169.254.169.254/metadata/instance?api-version=2021-02-01

@@ -1,0 +1,17 @@
+# Exposed panels / dev tools — read-only GET to confirm reachability (never log in)
+/.git/config
+/.git/HEAD
+/jenkins/
+/grafana/login
+/kibana/
+/phpmyadmin/
+/actuator
+/actuator/health
+/actuator/env
+/server-status
+/.env
+/swagger-ui/
+/_cat/indices
+/wp-admin/
+/admin/
+/manager/html
