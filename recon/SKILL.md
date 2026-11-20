@@ -33,8 +33,8 @@ Every candidate flows through `scripts/scope_filter.py` (out-of-scope wins; norm
 before matching). Read `runbooks/triage.md` to interpret the result.
 
 **Tool choice:** `tools.md` is the arsenal — read it before any phase. The scripts are
-defaults, not limits: pick the tool that best fits the target, substitute when one is
-missing, and log why you chose it.
+defaults, not limits: pick the tool that best fits the target, install it from its official source if it's
+missing (or substitute), and log why you chose it.
 
 ## Phase cards
 

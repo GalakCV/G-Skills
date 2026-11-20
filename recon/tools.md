@@ -35,8 +35,10 @@ Selection rules:
 - **Check before you trust a tool.** Run it against something you know the answer to (a
   known-live host, a known subdomain). A resolver that drops known-good hosts or a crawler
   that returns nothing on a busy site is misconfigured, not proof of absence.
-- **Check the tool exists.** `command -v <tool>` before use. If it's missing, pick the next
-  best tool in the same category rather than failing the phase. Note the substitution.
+- **Check the tool exists.** `command -v <tool>` before use. If it's missing, you may
+  **install it yourself** when it's the best fit (see "Installing missing tools"), or pick
+  the next best tool in the same category if installing isn't worth it. Never fail a phase
+  just because a tool is absent. Log what you installed or substituted.
 - **Stay quiet.** Default to low concurrency and modest rate limits. Back off on 429/503 or
   rising timeouts. Being blocked mid-recon costs more than going slow.
 - **Log your choice.** For every tool run, record one line: tool, why you chose it over
@@ -55,6 +57,46 @@ Selection rules:
 
 Hard lines regardless of tool: never verify a discovered secret against its provider,
 never attempt a login, never claim a resource, never brute-force passwords.
+
+---
+
+## Installing missing tools
+
+You are allowed to download and install any tool in this arsenal when it is the right
+choice and isn't present. Decide like a hunter: install when the tool clearly beats the
+available alternative for this task (e.g. jsluice for a large JS corpus, sourcemapper
+when `.map` files exist); otherwise substitute and move on.
+
+Rules:
+
+- **Official source only.** Install from the repository named in this file (or the
+  distro/package registry for that exact project). No random forks, mirrors, or
+  "pre-built" binaries from unknown hosts.
+- **Prefer the native installer**, in this order:
+  - Go tools: `go install -v github.com/<owner>/<repo>/...@latest`
+    (e.g. `go install -v github.com/BishopFox/jsluice/cmd/jsluice@latest`)
+  - ProjectDiscovery tools: `go install -v github.com/projectdiscovery/<tool>/cmd/<tool>@latest`,
+    or `pdtm -i <tool>` if `pdtm` is present
+  - Rust tools: `cargo install <crate>` (e.g. `cargo install x8`, `cargo install feroxbuster`)
+  - Python tools: `pipx install <package>` (or `pipx install git+https://github.com/<owner>/<repo>`);
+    fall back to `pip install --user` / `--break-system-packages` only if pipx is unavailable
+  - Node tools: `npm install -g <package>` (e.g. `npm install -g webcrack`)
+  - Ruby tools: `gem install <gem>` (e.g. `gem install wpscan`)
+  - Kali/Debian packages: `sudo apt install -y <pkg>` when the tool is packaged (subfinder,
+    amass, gobuster, feroxbuster, ffuf, wpscan, gowitness…)
+  - Scripts without a package (LinkFinder, SecretFinder, cloud_enum): `git clone` into
+    `~/tools/<repo>` and install its `requirements.txt` in a venv
+- **Install into user space** (`~/go/bin`, `~/.cargo/bin`, `~/.local/bin`, `~/tools/`).
+  Use `sudo` only for apt packages. Make sure the bin dir is on `PATH` for the session.
+- **Verify after install:** run `<tool> -h` / `--version`, then the self-check against a
+  known answer before using it on the scope.
+- **Never pipe a remote script into a shell** (`curl … | bash`) and never run installers
+  that ask for credentials or API keys you weren't given. If a tool needs an API key
+  (github-subdomains, Shodan, Censys, WPScan API token), use it only if the key is already
+  configured; otherwise skip that source and note it.
+- **Time-box it.** If an install fails twice (build errors, missing toolchain), stop
+  trying, substitute the next best tool, and record the failure in the tool log.
+- **Log it.** One line per install: tool, version, source, install method.
 
 ---
 
