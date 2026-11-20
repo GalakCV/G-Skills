@@ -8,6 +8,14 @@ license: MIT
 default_tier: active-intrusive
 requires_authorization: true
 
+# Tier split rationale (2026-11-20): same rule as cloud/skill.yaml — a phase is
+# active-safe when `guard:` below already blocks the dangerous outcome (claiming,
+# writing, logging in) regardless of tier. The agent runs all active-safe phases
+# autonomously and may escalate one read-only step deeper on a promising signal
+# without waiting for per-step approval. Only CLAIMING a resource, logging into a
+# panel, or sending a zone-transfer-adjacent write stays active-intrusive. See
+# safety.md §6.
+
 inputs:
   target: null
   run_dir: null
@@ -16,6 +24,7 @@ guard:
   scope_filter: ../recon/scripts/scope_filter.py
   non_destructive: true
   no_resource_claim: true   # never register/claim a dangling resource
+  no_login_attempt: true    # never submit credentials to a found panel, default or otherwise
 
 phases:
   - id: takeover
@@ -25,16 +34,39 @@ phases:
     script: scripts/takeover_check.py
     payloads: payloads/takeover-fingerprints.txt
     priority: 1
+  - id: cname-claim-score
+    tier: active-safe        # pure classification of takeover.py's own output — no new requests
+    desc: rank dangling CNAMEs from `takeover` by claim-likelihood (service match vs CloudFront-style unclaimable) so low-value noise doesn't drown the real candidates
+    runbook: runbooks/cname-score.md
+    script: scripts/cname_claim_score.py
+    priority: 1
   - id: exposed-services
+    tier: active-safe        # fingerprint/landing-page only; guard blocks login attempts regardless
     desc: reachable admin panels / dev tools / management UIs (read-only)
     runbook: runbooks/services.md
     payloads: payloads/panels.txt
+    priority: 2
+  - id: cicd-exposure
+    tier: active-safe        # read-only reachability of CI/CD and artifact-repo UIs
+    desc: exposed Jenkins/GitLab runner/Artifactory/Nexus instances reachable without auth
+    runbook: runbooks/cicd.md
+    script: scripts/cicd_check.py
+    payloads: payloads/cicd-panels.txt
+    priority: 2
   - id: tls
     tier: active-safe
     desc: expired/mismatched certs, weak protocols
     runbook: runbooks/tls.md
     script: scripts/tls_check.sh
+    priority: 2
+  - id: shared-cert
+    tier: active-safe        # passive cert comparison, no new connections beyond the TLS handshake
+    desc: a cert serving the target also covers an unrelated external domain (tenant/host confusion — e.g. a dev host answering for someone else's CN/SAN)
+    runbook: runbooks/shared-cert.md
+    script: scripts/shared_cert_check.py
+    priority: 3
   - id: dns
+    tier: active-safe         # read-only query; a REFUSED zone transfer attempt is not a write
     desc: zone transfer, dangling records, misconfig (detection only)
     runbook: runbooks/dns.md
 

@@ -28,3 +28,18 @@ Deterministic rules. Not the agent's to relax.
 ## 5. Rate & honesty
 - Polite rates. Confirmed = observed this run. Dangling CNAME to a non-claimable service
   (e.g. deleted CloudFront) is a weak signal, not a confirmed takeover — say so.
+
+## 6. Autonomous escalation (active-safe phases only)
+- No per-step human approval needed inside an active-safe phase. On a promising signal
+  the agent may, on its own: re-confirm, check sibling hosts/environments for the same
+  issue, and take one more read-only step to size severity (e.g. count unauth CI jobs,
+  check whether an unrelated cert also answers the other way round). Still bounded by
+  rules 1-5 — never a login attempt, never a resource claim, never using a found secret.
+- The line that always needs `explore`'s human gate: logging into anything (even
+  default creds), claiming/registering a dangling resource, submitting a script/job to
+  a CI system, downloading an artifact, or sending an AXFR/write-shaped DNS request the
+  program hasn't pre-approved.
+- On a HIGH-signal finding (claimable dangling CNAME, unauthenticated CI/CD with a real
+  job/project list, a cert naming a clearly unrelated company), stop widening the sweep
+  on that host/class and surface a draft report immediately rather than waiting for the
+  rest of the phase list — the same duplicate-race logic as in cloud/safety.md §6.

@@ -8,6 +8,15 @@ license: MIT
 default_tier: active-intrusive
 requires_authorization: true
 
+# Tier split rationale (2026-11-20): a phase is active-safe when the dangerous action it
+# could lead to is already blocked by `guard:` below regardless of tier — not by the human
+# gate. The agent may run every active-safe phase autonomously, without waiting for a human
+# to approve each step, including going one confirmation step deeper when a signal looks
+# promising (e.g. re-requesting a listing to confirm it isn't a one-off, checking the same
+# misconfig across sibling hosts/envs). What stays active-intrusive is only the step that
+# would cross from "prove it's open" to "use what's inside" — claiming, writing, deleting,
+# or acting on a found credential. See safety.md §2 for the exact line.
+
 inputs:
   target: null
   run_dir: null
@@ -16,6 +25,7 @@ guard:
   scope_filter: ../recon/scripts/scope_filter.py
   non_destructive: true
   no_credential_retrieval: true   # never pull or use real cloud credentials
+  no_resource_claim: true         # never claim/register/write a found-open cloud resource
 
 phases:
   - id: asset-fingerprint
@@ -23,16 +33,40 @@ phases:
     desc: detect AWS/GCP/Azure from CNAME/headers
     runbook: runbooks/fingerprint.md
     script: scripts/cloud_fingerprint.py
+    priority: 1
   - id: bucket-exposure
+    tier: active-safe          # read-only list/HEAD check; guard blocks write/exfil regardless
     desc: find & test object storage for public list/read (unauth GET)
     runbook: runbooks/buckets.md
     script: scripts/bucket_check.sh
     payloads: payloads/bucket-words.txt
+    priority: 2
+  - id: admin-console
+    tier: active-safe          # fingerprint only; no login attempt, no default-creds brute
+    desc: exposed cloud-native consoles/dashboards (Function App console, K8s dashboard, Azure/GCP portals left open, API Management dev portal)
+    runbook: runbooks/admin-console.md
+    script: scripts/admin_console_check.py
+    payloads: payloads/admin-console-fingerprints.txt
+    priority: 2
+  - id: cdn-origin-leak
+    tier: active-safe          # passive header/DNS comparison, no direct-to-origin exploitation
+    desc: origin IP exposed behind a CDN (Host-header mismatch, DNS history, cert reuse)
+    runbook: runbooks/cdn-origin.md
+    script: scripts/cdn_origin_check.py
+    priority: 3
+  - id: ssrf-surface
+    tier: active-safe           # static param analysis only — flags hypotheses, sends nothing to an internal IP
+    desc: flag URL-fetching params (webhook/url=/callback/render/import) as metadata-SSRF hypotheses, no payload sent
+    runbook: runbooks/iam-surface.md
+    script: scripts/iam_surface_check.py
+    priority: 3
   - id: metadata-reach
-    desc: metadata reachability via a confirmed SSRF (reachability only)
+    tier: active-intrusive      # actually sending an internal-IP payload through a param — stays gated
+    desc: metadata reachability via a confirmed SSRF (reachability only, never fetch the body)
     runbook: runbooks/metadata.md
     payloads: payloads/metadata-endpoints.txt
   - id: misconfig
+    tier: active-safe
     desc: public snapshots, open browsers, exposed cloud dashboards
     runbook: runbooks/misconfig.md
 

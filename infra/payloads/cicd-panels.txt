@@ -1,0 +1,14 @@
+# name|path|body-fingerprint|note
+Jenkins|/login?from=%2F|Jenkins|unauth job list at /api/json is the strongest proof
+Jenkins (script console)|/script|Groovy|HIGH if reachable unauth — do not submit any script
+GitLab|/users/sign_in|GitLab|check /api/v4/projects for unauth project listing
+GitLab Runner metrics|/metrics|gitlab_runner|internal metrics endpoint, often left open
+Artifactory|/artifactory/webapp/|JFrog Artifactory|check /artifactory/api/repositories for unauth listing
+Nexus Repository|/nexus/|Nexus Repository Manager|check /service/rest/v1/repositories
+Nexus Repository (v3 path)|/|Sonatype Nexus Repository|alt landing path on some installs
+TeamCity|/login.html|TeamCity|check /app/rest/builds for unauth API
+Bamboo|/login.action|Bamboo|Atlassian Bamboo CI
+Drone CI|/login|Drone|self-hosted Drone instance
+Argo CD|/login|Argo CD|GitOps deployment controller, often exposes app/cluster topology
+CircleCI (self-hosted)|/|CircleCI Server|rare, self-hosted CircleCI installs
+SonarQube|/sessions/new|SonarQube|code-quality dashboard, may leak repo/project names

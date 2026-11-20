@@ -28,3 +28,20 @@ Deterministic rules. Not the agent's to relax.
 ## 5. Honesty & rate
 - Confirmed = a request observed public access this run. Otherwise hypothesis.
 - Polite rates. Bucket-name brute force is bounded and low-rate; this is not a mass scanner.
+
+## 6. Autonomous escalation (active-safe phases only)
+- The agent does not need a human to approve each step of an active-safe phase. When a
+  phase finds something promising, it may on its own: re-confirm the finding, check the
+  same misconfig across sibling hosts/environments, and go one read-only step deeper to
+  size the blast radius (e.g. count files in a listing, check whether the same console
+  is open on dev/qa/stage too). This is still bounded by rules 1-5 above — it never
+  becomes a reason to retrieve credentials, claim a resource, or write/delete anything.
+- The moment a next step would need a real login attempt, a crafted payload sent to an
+  internal/metadata IP, or using something found (a key, a token, a session) — stop and
+  hand off to the gated `metadata-reach` phase or to `explore`, which require the
+  human's go-ahead per target.
+- On a HIGH-signal finding (bucket public-list, console reachable without auth, origin
+  IP bypassing the CDN, metadata hypothesis with a very direct param): stop expanding
+  the sweep on that host/class and surface the finding immediately with a draft
+  report, rather than waiting for the full phase list to finish. Speed to report
+  matters as much as depth once something this unambiguous is confirmed.

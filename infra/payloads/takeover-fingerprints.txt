@@ -13,3 +13,21 @@ Netlify|netlify.app|Not Found|yes
 Surge|surge.sh|project not found|yes
 Readthedocs|readthedocs.io|unknown to Read the Docs|yes
 AWS CloudFront|cloudfront.net||no
+Pantheon|pantheonsite.io|The gods are wise|yes
+WordPress.com|wordpress.com|Do you want to register|yes
+Tumblr|tumblr.com|Whatever you were looking for, it's not currently here|yes
+UserVoice|uservoice.com|This UserVoice subdomain is currently available|yes
+StatusPage|statuspage.io|StatusPage.io|yes
+Help Scout|helpscoutdocs.com|No settings were found for this company|yes
+Webflow|proxy-ssl.webflow.com|project not found|yes
+Ghost(Pro)|ghost.io|The thing you were looking for is no longer here|yes
+Bitbucket|bitbucket.io|Repository not found|yes
+Unbounce|unbounceapp.com|The requested URL was not found on this server|yes
+Cargo Collective|cargocollective.com|404 Not Found|yes
+Desk.com|desk.com|Please try again or try Desk.com|yes
+Teamwork|teamwork.com|Oops - We didn't find your site|yes
+Intercom|custom.intercom.help|This page is reserved for artistic dreams|yes
+Google Cloud Storage|storage.googleapis.com|NoSuchBucket|yes
+Azure Blob|blob.core.windows.net|BlobNotFound|yes
+Akamai|edgekey.net||no
+Google Domains Frontend|googleusercontent.com||no

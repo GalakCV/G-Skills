@@ -1,0 +1,16 @@
+# name|path|body-fingerprint|severity note
+Kubernetes Dashboard|/|Kubernetes Dashboard|HIGH if reachable without auth — full cluster visibility/control
+Kubernetes API (unauth)|/api/v1/namespaces|"kind": "NamespaceList"|HIGH — anonymous API access
+Azure Kudu/SCM|/.scm/|Kudu|HIGH — Function/App Service advanced tools, often reveals env vars via /Env
+Azure Kudu/SCM (direct)|/scm/|Kudu|HIGH — same as above, alt path on some App Service plans
+Grafana|/login|Welcome to Grafana|MED — default creds often unchanged; do not attempt login
+Kibana|/app/kibana|kbn-injected-metadata|MED — may expose indexed logs via saved dashboards
+Consul UI|/ui/|Consul|MED — service registry, can leak internal topology
+Prometheus|/graph|Prometheus Time Series Collection|MED — metrics can leak internal hostnames/paths
+Spring Boot Actuator|/actuator|"_links"|HIGH if /actuator/env or /actuator/heapdump reachable — flag, do not fetch heapdump
+Jenkins (cloud-hosted)|/login?from=%2F|Jenkins|MED — see infra/cicd.md for the dedicated CI/CD check
+Portainer|/|Portainer|MED — container management UI
+RabbitMQ Management|/|RabbitMQ Management|MED — queue management UI, check for guest/guest only as read-only probe
+pgAdmin|/login?next=%2F|pgAdmin 4|HIGH — DB admin UI exposed
+Azure API Management dev portal|/developer||MED — self-service API docs, check for internal-only APIs listed
+GCP Cloud Shell/Console lookalike|/|Google Cloud Platform|LOW — usually a misrouted CNAME, confirm it isn't the real console before reporting
