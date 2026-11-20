@@ -32,6 +32,10 @@ Always obey `safety.md` first.
 Every candidate flows through `scripts/scope_filter.py` (out-of-scope wins; normalize
 before matching). Read `runbooks/triage.md` to interpret the result.
 
+**Tool choice:** `tools.md` is the arsenal — read it before any phase. The scripts are
+defaults, not limits: pick the tool that best fits the target, substitute when one is
+missing, and log why you chose it.
+
 ## Phase cards
 
 ### passive-enum
